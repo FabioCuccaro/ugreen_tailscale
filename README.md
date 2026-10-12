@@ -1,5 +1,7 @@
 # Tailscale sul NAS Ugreen
 
+> **Per l'installazione: [checklist](docs/checklist.md)**, i passi in breve da leggere sul telefono (dettagli nella [guida](docs/guida.md)).
+
 VPN per raggiungere da fuori casa (telefono, PC Windows, Omarchy) i servizi del NAS **senza esporli su internet**: niente porte aperte sul router, niente accesso rapido o UGREENlink di Ugreen.
 
 Nato il 2026-10-12 dal progetto Oura ([`pbi_oura_monitoring`](https://github.com/FabioCuccaro/pbi_oura_monitoring), piano in `docs/piani/vpn.md`), ma tenuto separato perché serve a tutto il NAS: dashboard Oura, interfaccia di UGOS, cartelle condivise, Plex, qBittorrent.

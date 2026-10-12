@@ -1,6 +1,6 @@
 # Guida passo passo
 
-Per Fabio. I nomi dei menu di UGOS e di Tailscale vengono dalle guide trovate il 2026-10-12: se a schermo sono diversi, vale lo schermo, e questa guida si corregge.
+Per Fabio. I nomi dei menu di UGOS e di Tailscale vengono dalle guide trovate il 2026-10-12: se a schermo sono diversi, vale lo schermo, e questa guida si corregge. Versione corta da telefono: [checklist](checklist.md).
 
 ## 1. Prima di tutto: spegnere l'accesso rapido
 
