@@ -6,6 +6,7 @@
 #   https://tailscale.com/docs/features/containers/docker/docker-params
 #   https://tailscale.com/docs/features/containers/docker/how-to/connect-docker-container
 #   https://tailscale.com/kb/1019/subnets
+# Se UGOS rifiuta "devices" o "cap_add": usa docker-compose.userspace.yml (piano B).
 services:
   tailscale:
     image: tailscale/tailscale:stable
@@ -26,6 +27,8 @@ services:
       TS_HOSTNAME: nas
       # Facoltativo (guida, passo 6): l'indirizzo di casa del NAS raggiungibile anche da fuori,
       # così Power BI e le cartelle condivise usano 192.168.1.65 ovunque.
+      # Non serve attivare l'inoltro IP sul NAS: per un /32 che è un indirizzo del NAS stesso
+      # Tailscale non lo richiede (sorgente v1.102.3, net/netutil/ip_forward.go).
       # TS_ROUTES: "192.168.1.65/32"
     volumes:
       # Stato del nodo (contiene le sue chiavi): cartella del Project, mai condivisa.
