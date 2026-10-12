@@ -1,0 +1,4 @@
+# Stato di Tailscale (contiene le chiavi del nodo) e compose compilati: mai in git.
+state/
+*.local.yml
+.env

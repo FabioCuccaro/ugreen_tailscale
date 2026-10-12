@@ -1,0 +1,37 @@
+# Tailscale sul NAS Ugreen: da incollare in UGOS → Docker → Project (guida: docs/guida.md).
+# Prima di avviarlo sostituisci i valori tra < >.
+# Compilato contiene la auth key: tienilo solo sul NAS, mai in git.
+#
+# Riferimenti verificati il 2026-10-12:
+#   https://tailscale.com/docs/features/containers/docker/docker-params
+#   https://tailscale.com/docs/features/containers/docker/how-to/connect-docker-container
+#   https://tailscale.com/kb/1019/subnets
+services:
+  tailscale:
+    image: tailscale/tailscale:stable
+    container_name: tailscale
+    hostname: nas
+    # Rete dell'host: il NAS stesso entra nella rete Tailscale con un indirizzo 100.x.y.z
+    # e tutti i suoi servizi (dashboard Oura, UGOS, SMB, Plex...) si raggiungono da lì.
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      # Chiave del passo 2 della guida. Dopo il primo avvio riuscito si può togliere.
+      TS_AUTHKEY: "<auth key di Tailscale>"
+      # Fa il login solo se il nodo non è già collegato (lo stato resta in ./state).
+      TS_AUTH_ONCE: "true"
+      TS_STATE_DIR: /var/lib/tailscale
+      # Rete del kernel invece di quella "userspace": serve per arrivare alle porte del NAS.
+      TS_USERSPACE: "false"
+      TS_HOSTNAME: nas
+      # Facoltativo (guida, passo 6): l'indirizzo di casa del NAS raggiungibile anche da fuori,
+      # così Power BI e le cartelle condivise usano 192.168.1.65 ovunque.
+      # TS_ROUTES: "192.168.1.65/32"
+    volumes:
+      # Stato del nodo (contiene le sue chiavi): cartella del Project, mai condivisa.
+      - ./state:/var/lib/tailscale
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
+      - net_raw
