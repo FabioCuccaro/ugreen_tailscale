@@ -9,7 +9,8 @@ Nato il 2026-10-12 dal progetto Oura ([`pbi_oura_monitoring`](https://github.com
 - Un container `tailscale/tailscale` avviato come Project `tailscale` nell'app Docker di UGOS, con la rete dell'host: il NAS entra nella rete Tailscale con il nome `nas` e un indirizzo `100.x.y.z`.
 - Sui dispositivi (telefono, PC) c'è l'app Tailscale con lo stesso account.
 - Il traffico è cifrato da un capo all'altro (WireGuard). I server di Tailscale coordinano i collegamenti e sanno quali dispositivi si collegano, ma non vedono i dati.
-- Modello del compose: [`docker-compose.yml`](docker-compose.yml). Guida passo passo: [`docs/guida.md`](docs/guida.md).
+- Modello del compose: [`docker-compose.yml`](docker-compose.yml) (piano A, rete del kernel). Se UGOS non accetta `devices`/`cap_add`: [`docker-compose.userspace.yml`](docker-compose.userspace.yml) (piano B). Guida passo passo: [`docs/guida.md`](docs/guida.md).
+- La rete Tailscale (account) esiste già: dentro ci sono `omarchy` (100.98.69.103) e `pixel-8`. Il NAS va aggiunto **a questa**, non a un account nuovo.
 
 ## Il NAS
 
@@ -40,8 +41,10 @@ Da verificare dopo l'installazione e da aggiornare qui (anche l'indirizzo `100.x
 | Accesso rapido di UGOS (`…ugdocker.link`) e UGREENlink | **Esclusi** per i servizi con dati personali | 2026-10-12. Indirizzo pubblico, protetto solo dalla password del servizio, e il traffico passa dai server Ugreen: il certificato HTTPS è loro, quindi con ogni probabilità lo vedono in chiaro (non verificato). Da spegnere per il container `oura` |
 | Repo separato | **Deciso** | Scelta di Fabio, 2026-10-12: Tailscale serve a tutto il NAS, non solo a Oura |
 | Nome del nodo | **Deciso**: `nas` | Generico, perché il nodo serve a tutti i servizi |
-| Route verso `192.168.1.65` | **Da decidere** dopo il primo test | Utile per Power BI fuori casa senza cambiare il parametro `DataFolder`. Non si annuncia tutta la rete di casa (`192.168.1.0/24`), solo il NAS |
+| Route verso `192.168.1.65` | **Da decidere** dopo il primo test | Utile per Power BI fuori casa senza cambiare il parametro `DataFolder`. Non si annuncia tutta la rete di casa (`192.168.1.0/24`), solo il NAS. 2026-10-12: verificato nel sorgente di Tailscale 1.102.3 (`net/netutil/ip_forward.go`) che per un `/32` che è un indirizzo del NAS stesso **non serve l'inoltro IP**; funziona anche nel piano B. Manca la prova dal vivo |
 | Scadenza della chiave del nodo | **Da fare**: *Disable key expiry* sul nodo `nas` | Altrimenti dopo qualche mese il NAS esce dalla rete Tailscale |
-| `devices` e `cap_add` nel compose di UGOS | **Da verificare** al primo avvio | Se UGOS non li accetta o manca `/dev/net/tun`, si prova la modalità userspace con Tailscale Serve |
+| `devices` e `cap_add` nel compose di UGOS | **Da verificare** al primo avvio | Se UGOS non li accetta o manca `/dev/net/tun`: piano B pronto, [`docker-compose.userspace.yml`](docker-compose.userspace.yml). 2026-10-12: Tailscale Serve non serve, perché in userspace le connessioni verso l'IP Tailscale del nodo vengono girate a `127.0.0.1` sulla stessa porta (sorgente v1.102.3, `wgengine/netstack/netstack.go`, `acceptTCP`; non è scritto nella documentazione). Da provare dal telefono, comprese le cartelle condivise |
+| Account Tailscale | **Esiste già** | 2026-10-12: su Omarchy `tailscale status` mostra `omarchy` e `pixel-8` nella stessa rete. Il NAS si aggiunge lì (guida, passo 2) |
+| Compose controllato in locale | **Fatto**, senza avviarlo | 2026-10-12: `docker compose config` valido per entrambi i file. Non avviati su Omarchy (Docker spento): la prova vera è sul NAS |
 | Notifiche sul telefono (ntfy) | **Evolutiva**, dal progetto Oura | Diventa possibile con Tailscale: il telefono raggiunge ntfy sul NAS anche fuori casa |
 | Regole di accesso (ACL) | **Default** di Tailscale | Con un solo utente va bene così. Da rivedere se si condivide il NAS con altri |
