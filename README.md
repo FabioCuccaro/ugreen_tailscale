@@ -32,6 +32,7 @@ Dettagli completi sul NAS nel repo Oura, `docs/nas.md` punto 6.
 |---|---|
 | Dashboard Oura | `http://nas:8095` (o `http://100.x.y.z:8095`) |
 | Cartella dei dati Oura (Power BI) | `\\192.168.1.65\oura_folder\parquet\` se è attiva la route del passo 6, altrimenti `\\nas\oura_folder\parquet\` |
+| Notifiche ntfy (app ntfy e pagina web) | `http://nas:8090`, argomento `nas` ([guida](docs/ntfy.md)) |
 
 Da verificare dopo l'installazione e da aggiornare qui (anche l'indirizzo `100.x.y.z` reale).
 
@@ -48,5 +49,5 @@ Da verificare dopo l'installazione e da aggiornare qui (anche l'indirizzo `100.x
 | `devices` e `cap_add` nel compose di UGOS | **Da verificare** al primo avvio | Se UGOS non li accetta o manca `/dev/net/tun`: piano B pronto, [`docker-compose.userspace.yml`](docker-compose.userspace.yml). 2026-10-12: Tailscale Serve non serve, perché in userspace le connessioni verso l'IP Tailscale del nodo vengono girate a `127.0.0.1` sulla stessa porta (sorgente v1.102.3, `wgengine/netstack/netstack.go`, `acceptTCP`; non è scritto nella documentazione). Da provare dal telefono, comprese le cartelle condivise |
 | Account Tailscale | **Esiste già** | 2026-10-12: su Omarchy `tailscale status` mostra `omarchy` e `pixel-8` nella stessa rete. Il NAS si aggiunge lì (guida, passo 2) |
 | Compose controllato in locale | **Fatto**, senza avviarlo | 2026-10-12: `docker compose config` valido per entrambi i file. Non avviati su Omarchy (Docker spento): la prova vera è sul NAS |
-| Notifiche sul telefono (ntfy) | **Evolutiva**, dal progetto Oura | Diventa possibile con Tailscale: il telefono raggiunge ntfy sul NAS anche fuori casa |
+| Notifiche sul telefono (ntfy) | **Deciso**: Project `ntfy` sul NAS, porta 8090, **da avviare** | 2026-10-14, scelta di Fabio. Compose in [`docker/ntfy`](docker/ntfy/docker-compose.yml), guida in [`docs/ntfy.md`](docs/ntfy.md). Raggiungibile solo da Tailscale (`http://nas:8090`), accesso negato senza login, utente creato dal terminale del container (nessuna password in git). Sul Pixel l'app usa la connessione diretta (*instant delivery*) e non Firebase. Configurazione provata il 2026-10-14 con ntfy 2.30.0 fuori dal NAS; terminale del container in UGOS trovato da Fabio (*Add Connection*, comando `/bin/sh`: l'immagine è Alpine, senza bash); da verificare dal vivo: porta 8090 libera, consegna a telefono fermo |
 | Regole di accesso (ACL) | **Default** di Tailscale | Con un solo utente va bene così. Da rivedere se si condivide il NAS con altri |
