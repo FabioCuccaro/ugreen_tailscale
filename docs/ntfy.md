@@ -23,7 +23,7 @@ UGOS → app **Docker** → *Container*: guarda le porte dei container (`oura` u
 
 Va fatto una volta sola, da un terminale **dentro il container** (non serve SSH).
 
-1. Docker → *Container* → `ntfy` → cerca la scheda o il pulsante **Terminale** (o *Console*, *Exec*: il nome esatto in UGOS è da verificare). Se chiede quale shell, scegli `sh`.
+1. Docker → *Container* → `ntfy` → terminale del container → **Add**. Nella finestra *Add Connection*, nel campo *Command* scrivi **`/bin/sh`** al posto di `/bin/bash` (il container di ntfy non ha bash) → *Confirm*.
 2. Scrivi questo e premi Invio:
 
    ```
@@ -33,7 +33,7 @@ Va fatto una volta sola, da un terminale **dentro il container** (non serve SSH)
 3. Scrivi due volte una password nuova (mentre scrivi non si vede niente, è normale). Deve rispondere `user fabio added with role admin`.
 4. Annota la password nel tuo password manager.
 
-Se in UGOS non trovi un terminale per il container: **fai una foto alla pagina del container** e mandamela, preparo un'alternativa (l'utente si può anche scrivere nel compose).
+Se il terminale si chiude subito o dà errore, controlla che il comando sia `/bin/sh` e che il container `ntfy` sia avviato.
 
 ## 4. Prova dal PC 🏠
 
