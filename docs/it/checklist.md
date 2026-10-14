@@ -14,7 +14,7 @@ Dove si fa:
 
 ## A casa, dal PC 🏠
 
-- [ ] **Spegni l'accesso rapido** (guida, passo 1) per i container con dati personali. Dal telefono, **con il Wi‑Fi spento**, il vecchio indirizzo `…ugdocker.link` non deve più aprirsi. Cambia la password dei servizi che erano esposti.
+- [ ] **Spegni UGREENlink** (guida, passo 1): *Control Panel → Remote access → Method 1* → togli la spunta a *UGREENlink remote access*. Spegne anche l'accesso rapido dei container (non c'è un interruttore per container). Dal telefono, **con Wi‑Fi e Tailscale spenti**, `ug.link/<ID>` e `…ugdocker.link` non devono più aprirsi. Cambia la password dei servizi che erano esposti. Da fuori casa UGOS si apre poi su `https://nas:9443`.
 - [ ] **Crea il Project `tailscale`** (guida, passo 3). Docker → Project → Crea, nome `tailscale`, cartella `docker/tailscale`. Incolla [`docker-compose.yml`](../../docker-compose.yml) e metti la auth key al posto di `<tailscale auth key>` (oppure togli la riga e usa il link di login che compare nei *Logs*). Avvia.
   - Se UGOS rifiuta il testo o i *Logs* parlano di `/dev/net/tun`, `devices` o `cap_add`: **fai una foto all'errore**, poi incolla [`docker-compose.userspace.yml`](../../docker-compose.userspace.yml) (piano B) e riavvia.
 - [ ] **Controlla il nodo**. Su <https://login.tailscale.com/admin/machines> deve comparire `nas` con un indirizzo `100.…`. **Annotalo.**
