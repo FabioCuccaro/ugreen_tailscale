@@ -1,6 +1,6 @@
-# Stato di Tailscale (contiene le chiavi del nodo) e compose compilati: mai in git.
+# Tailscale state (contains the node keys) and filled-in compose files: never in git.
 state/
 *.local.yml
 .env
-# Dati di ntfy (utenti, cache, allegati) se si prova il compose in locale.
+# ntfy data (users, cache, attachments) if you try the compose locally.
 docker/ntfy/data/

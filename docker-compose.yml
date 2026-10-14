@@ -1,37 +1,43 @@
-# Tailscale sul NAS Ugreen: da incollare in UGOS → Docker → Project (guida: docs/guida.md).
-# Prima di avviarlo sostituisci i valori tra < >.
-# Compilato contiene la auth key: tienilo solo sul NAS, mai in git.
+# Tailscale on a UGREEN NAS — PLAN A (kernel networking).
+# Paste into UGOS → Docker → Project (see README.md, or docs/it/guida.md in Italian).
+# Replace the values between < > before starting it.
+# Once filled in, this file contains your auth key: keep it only on the NAS, never in git.
 #
-# Riferimenti verificati il 2026-10-12:
-#   https://tailscale.com/docs/features/containers/docker/docker-params
-#   https://tailscale.com/docs/features/containers/docker/how-to/connect-docker-container
+# Tested on a UGREEN DXP2800 with UGOS: UGOS accepts "devices" and "cap_add",
+# and /dev/net/tun exists. If your model refuses them, use docker-compose.userspace.yml (plan B).
+#
+# References:
+#   https://tailscale.com/kb/1282/docker
 #   https://tailscale.com/kb/1019/subnets
-# Se UGOS rifiuta "devices" o "cap_add": usa docker-compose.userspace.yml (piano B).
 services:
   tailscale:
     image: tailscale/tailscale:stable
     container_name: tailscale
     hostname: nas
-    # Rete dell'host: il NAS stesso entra nella rete Tailscale con un indirizzo 100.x.y.z
-    # e tutti i suoi servizi (dashboard Oura, UGOS, SMB, Plex...) si raggiungono da lì.
+    # Host network: the NAS itself joins your tailnet with a 100.x.y.z address,
+    # so every service on the NAS (UGOS web UI, SMB shares, Plex, your containers...)
+    # is reachable through it.
     network_mode: host
     restart: unless-stopped
     environment:
-      # Chiave del passo 2 della guida. Dopo il primo avvio riuscito si può togliere.
-      TS_AUTHKEY: "<auth key di Tailscale>"
-      # Fa il login solo se il nodo non è già collegato (lo stato resta in ./state).
+      # Auth key from https://login.tailscale.com/admin/settings/keys (one-off, not ephemeral).
+      # Alternative: delete this line, start the container and open the login link
+      # printed in its Logs. Either way, remove the key after the first successful start.
+      TS_AUTHKEY: "<tailscale auth key>"
+      # Log in only if the node is not already authenticated (state is kept in ./state).
       TS_AUTH_ONCE: "true"
       TS_STATE_DIR: /var/lib/tailscale
-      # Rete del kernel invece di quella "userspace": serve per arrivare alle porte del NAS.
+      # Kernel networking (TUN) instead of userspace networking.
       TS_USERSPACE: "false"
+      # Name of the NAS in your tailnet: you will reach it as http://nas:<port>.
       TS_HOSTNAME: nas
-      # Facoltativo (guida, passo 6): l'indirizzo di casa del NAS raggiungibile anche da fuori,
-      # così Power BI e le cartelle condivise usano 192.168.1.65 ovunque.
-      # Non serve attivare l'inoltro IP sul NAS: per un /32 che è un indirizzo del NAS stesso
-      # Tailscale non lo richiede (sorgente v1.102.3, net/netutil/ip_forward.go).
-      # TS_ROUTES: "192.168.1.65/32"
+      # Optional (README, "Use the NAS LAN address from outside"): also make the NAS's
+      # home address reachable through Tailscale. Only the NAS itself (/32), never the
+      # whole home network. IP forwarding is not required for a /32 that is the NAS's own
+      # address (Tailscale source, net/netutil/ip_forward.go).
+      # TS_ROUTES: "<NAS LAN IP>/32"
     volumes:
-      # Stato del nodo (contiene le sue chiavi): cartella del Project, mai condivisa.
+      # Node state (contains its keys): stays in the Project folder, never shared.
       - ./state:/var/lib/tailscale
     devices:
       - /dev/net/tun:/dev/net/tun

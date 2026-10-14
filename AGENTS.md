@@ -1,11 +1,11 @@
-# Regole per gli assistenti (Claude Code, thread sul web, altri agenti)
+# Rules for AI assistants and contributors
 
-Questo repo raccoglie la configurazione di **Tailscale sul NAS Ugreen di casa**: la VPN che permette di raggiungere i servizi del NAS da fuori casa senza esporli su internet. Si lavora da più PC e da più sessioni che non condividono la cronologia delle chat: **il README è la memoria comune**.
+This repo is a public, generic guide: Tailscale in Docker on a UGREEN NAS managed from the UGOS web UI, to reach the NAS's services from outside without exposing them to the internet.
 
-1. **README sempre aggiornato, nello stesso commit della modifica**, compresa la tabella "Decisioni aperte" (stato, data, motivo). Se una decisione cambia, aggiorna la riga invece di aggiungerne una nuova.
-2. **Mai segreti in git**: auth key di Tailscale, cartella `state/`, compose compilato, password. Nel repo solo il modello con i valori tra `< >`.
-3. **Niente esposizione su internet.** Niente accesso rapido o UGREENlink per i servizi del NAS, niente porte aperte sul router, niente Tailscale Funnel. Fuori casa si passa solo dalla rete Tailscale.
-4. **Verifica sulla documentazione ufficiale** (tailscale.com, documentazione Ugreen) prima di scrivere variabili, opzioni o menu. Se non puoi verificare, scrivilo e indica a Fabio cosa controllare a schermo.
-5. **Il NAS si gestisce dall'interfaccia web di UGOS.** SSH è spento: gli assistenti non hanno accesso diretto al NAS. I passi su UGOS, sulla console di Tailscale e sul telefono sono manuali per Fabio, scritti passo passo (è poco pratico di terminale).
-6. Testo per l'utente in italiano semplice.
-7. I dati del progetto Oura (`FabioCuccaro/pbi_oura_monitoring`) sono dati sanitari: qui non entra niente di quei dati. Quel repo rimanda qui per Tailscale; se cambia l'indirizzo con cui si raggiungono i suoi servizi, aggiorna anche il suo README.
+1. **Keep it generic.** No personal values: real IP addresses, Tailscale `100.x.y.z` addresses, device names, user names, personal services or paths. Use placeholders between `< >` (`<NAS LAN IP>`, `<port>`, `<user>`) or clearly fake examples (`192.168.1.10`).
+2. **Never commit secrets**: Tailscale auth keys, the `state/` folder, filled-in compose files, passwords, ntfy tokens.
+3. **No internet exposure.** No UGOS Quick access or UGREENlink, no open router ports, no Tailscale Funnel. From outside, only through the tailnet.
+4. **Check the official docs** (tailscale.com, docs.ntfy.sh, UGREEN) before writing variables, options or menu names. Mark anything not verified on a real NAS as untested (⚠️ in the README).
+5. **Readers manage the NAS from the UGOS web UI**, often without SSH and with little terminal experience: write UGOS, Tailscale console and phone steps one by one.
+6. **English README is the entry point**, the Italian guides live in `docs/it/`. When a step changes, update both languages in the same commit.
+7. When someone reports a result on a new model or setup, update the "Tested on" table in the README.
