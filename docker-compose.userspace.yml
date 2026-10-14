@@ -1,20 +1,21 @@
-# PIANO B: da usare solo se UGOS rifiuta docker-compose.yml (errori su /dev/net/tun,
-# "devices" o "cap_add"). Stessi passi della guida, cambia solo il testo incollato.
-# Prima di avviarlo sostituisci i valori tra < >.
-# Compilato contiene la auth key: tienilo solo sul NAS, mai in git.
+# Tailscale on a UGREEN NAS — PLAN B (userspace networking).
+# Use it only if UGOS refuses docker-compose.yml (errors about /dev/net/tun,
+# "devices" or "cap_add"). Same steps as plan A, only the pasted text changes.
+# Replace the values between < > before starting it.
+# Once filled in, this file contains your auth key: keep it only on the NAS, never in git.
 #
-# Differenza con il piano A: Tailscale gira in modalità "userspace", quindi non serve
-# /dev/net/tun né permessi speciali. Una connessione che arriva all'indirizzo 100.x.y.z
-# del nodo viene girata a 127.0.0.1 sulla stessa porta; con la rete dell'host 127.0.0.1
-# è il NAS, quindi http://nas:8095, UGOS e le cartelle condivise rispondono come nel piano A.
-# Il NAS però non può aprire connessioni verso gli altri dispositivi della rete Tailscale
-# (per i servizi del NAS non serve).
+# Difference from plan A: Tailscale runs in "userspace" mode, so it needs neither
+# /dev/net/tun nor extra capabilities. A connection arriving at the node's 100.x.y.z
+# address is forwarded to 127.0.0.1 on the same port; with the host network 127.0.0.1
+# is the NAS, so http://nas:<port>, UGOS and the shared folders should answer as in plan A.
+# The NAS, however, cannot open connections to the other devices in your tailnet
+# (not needed to reach the NAS's own services).
 #
-# Riferimenti verificati il 2026-10-12:
-#   https://tailscale.com/docs/features/containers/docker/docker-params (TS_USERSPACE è "true" di default)
-#   sorgente Tailscale v1.102.3, wgengine/netstack/netstack.go, funzione acceptTCP:
-#   in userspace le connessioni verso l'IP Tailscale del nodo vanno a 127.0.0.1:<porta>.
-#   Non è scritto nella documentazione: va provato al primo avvio (guida, passo 3).
+# NOT YET TESTED ON A REAL NAS. Based on:
+#   https://tailscale.com/kb/1282/docker (TS_USERSPACE defaults to "true")
+#   Tailscale source v1.102.3, wgengine/netstack/netstack.go, acceptTCP:
+#   in userspace mode, connections to the node's own Tailscale IP go to 127.0.0.1:<port>.
+#   This is not in the official docs. If you try it, please report back in an issue.
 services:
   tailscale:
     image: tailscale/tailscale:stable
@@ -22,12 +23,12 @@ services:
     network_mode: host
     restart: unless-stopped
     environment:
-      TS_AUTHKEY: "<auth key di Tailscale>"
+      TS_AUTHKEY: "<tailscale auth key>"
       TS_AUTH_ONCE: "true"
       TS_STATE_DIR: /var/lib/tailscale
       TS_USERSPACE: "true"
       TS_HOSTNAME: nas
-      # Facoltativo (guida, passo 6). In userspace funziona anche la route.
-      # TS_ROUTES: "192.168.1.65/32"
+      # Optional, as in plan A. The /32 route should also work in userspace mode.
+      # TS_ROUTES: "<NAS LAN IP>/32"
     volumes:
       - ./state:/var/lib/tailscale

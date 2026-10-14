@@ -1,41 +1,43 @@
-# ntfy sul NAS: notifiche sul telefono, raggiungibili da fuori casa solo tramite Tailscale.
-# Da incollare in UGOS → Docker → Project, nome "ntfy", cartella docker/ntfy (guida: docs/ntfy.md).
-# Non contiene segreti: l'utente e la password si creano dopo il primo avvio (guida, passo 3)
-# e restano nel database in ./data, sul NAS.
+# OPTIONAL: ntfy on the NAS — push notifications to your phone, reachable from outside
+# only through Tailscale. Paste into UGOS → Docker → Project, name "ntfy",
+# folder docker/ntfy (guide: docs/ntfy.md, Italian: docs/it/ntfy.md).
+# No secrets in here: users and passwords are created after the first start
+# and live in the database in ./data, on the NAS.
 #
-# Riferimenti verificati il 2026-10-14 (ntfy v2.30.0):
+# References (ntfy v2.30.0):
 #   https://docs.ntfy.sh/install/#docker
 #   https://docs.ntfy.sh/config/#access-control
 #   https://docs.ntfy.sh/config/#config-options
 services:
   ntfy:
-    # v2 = ultima versione 2.x: si aggiorna con "Redeploy" senza salti di versione maggiore.
+    # v2 = latest 2.x: updates with "Redeploy" without jumping a major version.
     image: binwiederhier/ntfy:v2
     container_name: ntfy
     command: serve
     restart: unless-stopped
-    # Necessario con l'healthcheck (lo dice la documentazione di ntfy).
+    # Required together with the healthcheck (per the ntfy docs).
     init: true
     environment:
+      # Your time zone, e.g. Europe/Rome, America/New_York.
       TZ: Europe/Rome
-      # Indirizzo con cui il telefono raggiunge ntfy: il nome Tailscale del NAS.
+      # Address your phone uses to reach ntfy: the Tailscale name of the NAS.
       NTFY_BASE_URL: http://nas:8090
-      # Messaggi salvati su disco: un telefono rimasto offline li riceve quando si ricollega.
+      # Messages stored on disk: a phone that was offline gets them when it reconnects.
       NTFY_CACHE_FILE: /var/lib/ntfy/cache.db
       NTFY_CACHE_DURATION: 72h
-      # Utenti e permessi. deny-all: senza login non si legge e non si scrive niente.
+      # Users and permissions. deny-all: without logging in, nothing can be read or written.
       NTFY_AUTH_FILE: /var/lib/ntfy/auth.db
       NTFY_AUTH_DEFAULT_ACCESS: deny-all
-      # Login dall'app web (http://nas:8090).
+      # Login from the web app (http://nas:8090).
       NTFY_ENABLE_LOGIN: "true"
-      # Allegati (foto, file) inviati con le notifiche.
+      # Attachments (pictures, files) sent with notifications.
       NTFY_ATTACHMENT_CACHE_DIR: /var/lib/ntfy/attachments
     volumes:
-      # Cache, utenti e allegati: cartella del Project, mai in git.
+      # Cache, users and attachments: Project folder, never in git.
       - ./data:/var/lib/ntfy
     ports:
-      # Porta 8090 del NAS → porta 80 del container. Se UGOS dice che è occupata, usa 8091
-      # e cambia anche NTFY_BASE_URL.
+      # NAS port 8090 → container port 80. If UGOS says it is taken, use another one
+      # (e.g. 8091) and change NTFY_BASE_URL too.
       - "8090:80"
     healthcheck:
       test: ["CMD-SHELL", "wget -q --tries=1 http://localhost:80/v1/health -O - | grep -Eo '\"healthy\"\\s*:\\s*true' || exit 1"]
