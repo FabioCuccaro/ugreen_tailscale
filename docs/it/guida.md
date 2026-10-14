@@ -6,14 +6,15 @@ I nomi dei menu di UGOS e di Tailscale cambiano con le versioni: se a schermo so
 
 Nella guida `<IP del NAS>` è l'indirizzo di casa del NAS (per esempio `192.168.1.10`) e `<porta>` è la porta di un servizio del NAS.
 
-## 1. Prima di tutto: spegnere l'accesso rapido
+## 1. Prima di tutto: spegnere UGREENlink
 
-Se in passato hai esposto dei container con l'Accesso rapido di UGOS (`…ugdocker.link`) o UGREENlink:
+L'indirizzo del desktop di UGOS `ug.link/<ID>` e quelli dell'Accesso rapido dei container (`…ugdocker.link`) passano tutti da **UGREENlink**, il servizio di inoltro di UGREEN. Sul DXP2800 (ottobre 2026) nell'app Docker **non c'è un interruttore per il singolo container**: l'interruttore è uno solo, per tutto il NAS.
 
-1. Nell'app **Docker** di UGOS apri il container o il Project e cerca l'opzione dell'accesso rapido (*Quick access* o simile). Disattivala per tutti i servizi con dati personali.
-2. Se non la trovi lì: *Pannello di controllo → Device Connection → Remote access* (il nome può variare) e guarda se UGREENlink è attivo e quali container elenca.
-3. Prova dal telefono **con il Wi‑Fi spento**: il vecchio indirizzo `…ugdocker.link` non deve più aprirsi.
-4. Cambia la password dei servizi che erano esposti: sono stati raggiungibili da internet.
+1. **Control Panel → Remote access → Method 1** → togli la spunta a **UGREENlink remote access** e salva. Se è attivo anche un *Method 2* (inoltro di porte, DDNS), spegni anche quello.
+2. Prova dal telefono **con Wi‑Fi e Tailscale spenti**: `ug.link/<ID>` e il vecchio indirizzo `…ugdocker.link` non devono più aprirsi.
+3. Cambia la password dei servizi che erano esposti: sono stati raggiungibili da internet.
+
+Da quel momento UGOS e l'app UGREEN si raggiungono da fuori casa con Tailscale (passo 6). Se sei fuori casa e adesso usi UGREENlink per entrare nel NAS, fai questo passo dopo che Tailscale funziona (passo 4).
 
 ## 2. Account Tailscale (browser)
 
@@ -40,7 +41,7 @@ Se al passo 3 UGOS rifiuta il compose o i log parlano di `/dev/net/tun`, `device
 ## 4. Telefono
 
 1. Installa l'app **Tailscale** e accedi con lo stesso account. Accendila.
-2. Spegni il Wi‑Fi e apri `http://nas:<porta>` di un servizio del NAS (un container, l'interfaccia di UGOS): deve rispondere come a casa.
+2. Spegni il Wi‑Fi e apri `http://nas:<porta>` di un servizio del NAS (un container, oppure l'interfaccia di UGOS su `https://nas:9443`): deve rispondere come a casa.
 3. Spegni Tailscale nell'app: lo stesso indirizzo non deve rispondere.
 
 Su Android conviene impostare Tailscale come **VPN sempre attiva**: *Impostazioni → Rete e Internet → VPN →* ingranaggio accanto a Tailscale.
@@ -54,7 +55,8 @@ Installa Tailscale da <https://tailscale.com/download> e accedi con lo stesso ac
 | Servizio | Indirizzo |
 |---|---|
 | Un container con una porta pubblicata | `http://nas:<porta>` (o `http://100.x.y.z:<porta>`) |
-| Interfaccia di UGOS | `http://nas:<porta di UGOS>`, la stessa che usi a casa |
+| Interfaccia di UGOS (al posto di `ug.link`) | `https://nas:9443` oppure `http://nas:9999` (porte predefinite di UGOS; se le hai cambiate, usa le tue). Con `https` il browser può avvisare sul certificato: il traffico è comunque cifrato da Tailscale |
+| App UGREEN sul telefono | Aggiungi il NAS con l'indirizzo `https://nas:9443`, con Tailscale acceso (✅ Android) |
 | Cartelle condivise | `\\nas\<cartella>` da Windows, `smb://nas/<cartella>` da macOS, Linux o dalle app del telefono |
 
 Se il nome `nas` non funziona, controlla che *MagicDNS* sia attivo nella console di Tailscale (pagina *DNS*), oppure usa l'indirizzo `100.x.y.z`.

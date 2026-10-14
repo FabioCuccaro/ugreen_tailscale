@@ -32,9 +32,15 @@ Two compose files are provided:
 
 ## Setup
 
-### 1. Turn off Quick access (recommended)
+### 1. Turn off UGREENlink (recommended)
 
-If you previously exposed containers with UGOS *Quick access* or UGREENlink, turn it off for every service with personal data: Docker app → your container or Project → *Quick access* option (the exact menu name may differ between UGOS versions). Then, from your phone **with Wi‑Fi off**, check that the old `…ugdocker.link` address no longer opens. If a service was exposed that way, change its password.
+The UGOS desktop address `ug.link/<ID>` and the container *Quick access* addresses (`…ugdocker.link`) both go through **UGREENlink**, UGREEN's relay. On a DXP2800 (October 2026) the Docker app has **no per-container switch**: the switch is for the whole NAS.
+
+1. **Control Panel → Remote access → Method 1** → untick **UGREENlink remote access** and save. If a *Method 2* (port forwarding, DDNS) is enabled, turn it off too.
+2. From your phone, **with Wi‑Fi and Tailscale off**: `ug.link/<ID>` and any old `…ugdocker.link` address must no longer open.
+3. If a service was exposed that way, change its password.
+
+From then on you reach UGOS and the UGREEN app through Tailscale (see [Reaching your services](#reaching-your-services)). If you are away from home and rely on UGREENlink right now, do this step once Tailscale works (step 4).
 
 ### 2. Tailscale account and auth key
 
@@ -56,7 +62,7 @@ If you previously exposed containers with UGOS *Quick access* or UGREENlink, tur
 ### 4. Test from your phone
 
 1. Install the Tailscale app (Android, iOS) and sign in with the same account.
-2. **Turn Wi‑Fi off** and open `http://nas:<port>` for one of your services (for example the UGOS web UI on its usual port, or a container's port).
+2. **Turn Wi‑Fi off** and open `http://nas:<port>` for one of your services (for example the UGOS web UI at `https://nas:9443`, or a container's port).
 3. Turn Tailscale off in the app: the same address must stop answering.
 
 On Android you can make Tailscale an *Always-on VPN* (Settings → Network & internet → VPN → gear icon next to Tailscale) so it never turns itself off.
@@ -72,7 +78,8 @@ With the Tailscale app on:
 | Service | Address |
 |---|---|
 | Any container with a published port | `http://nas:<port>` (or `http://100.x.y.z:<port>`) |
-| UGOS web UI | `http://nas:<UGOS port>`, the same port you use at home |
+| UGOS web UI (replaces `ug.link`) | `https://nas:9443` or `http://nas:9999` (UGOS default ports; if you changed them, use yours). With `https` the browser may warn about the certificate: traffic is encrypted by Tailscale anyway |
+| UGREEN app on the phone | Add the NAS by address, `https://nas:9443`, with Tailscale on (✅ Android) |
 | Shared folders (SMB) | `\\nas\<share>` on Windows, `smb://nas/<share>` on macOS / Linux / phone apps |
 
 If the name `nas` doesn't resolve, check that *MagicDNS* is enabled in the Tailscale admin console (*DNS* page), or use the `100.x.y.z` address.
@@ -109,6 +116,7 @@ Announce only the `/32` of the NAS, never your whole home network (`192.168.1.0/
 | Plan A | ✅ |
 | Plan B | ⚠️ untested |
 | `/32` route | ⚠️ untested |
+| UGREENlink off, UGOS web UI and UGREEN app (Android) through Tailscale | ✅ |
 
 Tried it on another UGREEN model (DXP4800, DXP6800, DH series...)? Please open an issue or a PR to add it to this table, especially if you needed plan B.
 
