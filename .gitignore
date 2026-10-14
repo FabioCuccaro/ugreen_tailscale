@@ -2,3 +2,5 @@
 state/
 *.local.yml
 .env
+# Dati di ntfy (utenti, cache, allegati) se si prova il compose in locale.
+docker/ntfy/data/
