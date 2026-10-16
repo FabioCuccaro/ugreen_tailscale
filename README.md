@@ -119,6 +119,7 @@ The Project [`docker/watchdog`](docker/watchdog/docker-compose.yml) uses it to n
 | Plan B | ⚠️ untested |
 | `/32` route | ⚠️ untested |
 | UGREENlink off, UGOS web UI and UGREEN app (Android) through Tailscale | ✅ |
+| `watchdog` alerts (container stopped / back up) | ✅ |
 
 Tried it on another UGREEN model (DXP4800, DXP6800, DH series...)? Please open an issue or a PR to add it to this table, especially if you needed plan B.
 

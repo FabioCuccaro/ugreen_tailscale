@@ -98,19 +98,21 @@ It is a short shell script inside the official `docker:27-cli` image: nothing to
 1. Docker → **Project** → *Create*. Name `watchdog`, folder `docker/watchdog`.
 2. Paste [`docker/watchdog/docker-compose.yml`](../docker/watchdog/docker-compose.yml) and change:
    - `NTFY_TOKEN`: your `tk_…` token (only in UGOS, never in git);
-   - `NTFY_URL`, if the NAS LAN address or the port of ntfy is different;
+   - `NTFY_URL`: replace `<NAS LAN IP>` with the LAN address of the NAS (and the port, if ntfy is not on 8090);
    - `IGNORE`, to add containers you don't want to hear about (names separated by spaces);
    - `GRACE`, if 60 seconds is too short or too long.
 3. Start it. The phone receives **Watchdog started**, and the container Logs show `watchdog: ntfy http://…/nas, grace 60 s, ignoring: watchdog`. If the Logs say `ntfy send failed`, check the token and the address.
 
 ### Test
 
+Pick a container you can stop for a minute (here `qbittorrent`).
+
 1. Docker → *Project* → `qbittorrent` → **Stop**.
 2. After about a minute the phone shows **qbittorrent stopped**.
 3. **Start** it again: **qbittorrent back up** arrives within seconds.
 4. **Restart** it: no notification.
 
-Tested on Docker with a fake ntfy server (October 2026): crash with exit code, crash loop, stop, start, restart and unhealthy all behave as in the table above.
+✅ Stop and start tested on a DXP2800 with UGOS, notifications received on Android (October 2026). Crash, crash loop, restart and unhealthy were tested on plain Docker with a fake ntfy server and behave as in the table above.
 
 ### Notes
 

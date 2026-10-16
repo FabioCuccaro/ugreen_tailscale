@@ -107,19 +107,21 @@ Un riavvio o un *Redeploy* finisce entro 60 secondi e non manda niente. Un conta
 1. Docker → **Project** → *Crea*. Nome `watchdog`, cartella `docker/watchdog`.
 2. Incolla [`docker/watchdog/docker-compose.yml`](../../docker/watchdog/docker-compose.yml) e cambia:
    - `NTFY_TOKEN`: il tuo token `tk_…` (solo in UGOS, mai in git);
-   - `NTFY_URL`, se l'indirizzo di casa del NAS o la porta di ntfy sono diversi;
+   - `NTFY_URL`: sostituisci `<NAS LAN IP>` con l'indirizzo di casa del NAS (e la porta, se ntfy non è sulla 8090);
    - `IGNORE`, per aggiungere i container che non vuoi seguire (nomi separati da spazi);
    - `GRACE`, se 60 secondi sono troppo pochi o troppi.
 3. Avvialo. Sul telefono arriva **Watchdog started**, e nei Log del container compare `watchdog: ntfy http://…/nas, grace 60 s, ignoring: watchdog`. Se i Log dicono `ntfy send failed`, controlla token e indirizzo.
 
 ### Prova 📱
 
+Scegli un container che puoi fermare per un minuto (qui `qbittorrent`).
+
 1. Docker → *Project* → `qbittorrent` → **Ferma**.
 2. Dopo circa un minuto sul telefono arriva **qbittorrent stopped**.
 3. **Avvialo** di nuovo: entro pochi secondi arriva **qbittorrent back up**.
 4. **Riavvialo**: nessuna notifica.
 
-Provato su Docker con un finto server ntfy (ottobre 2026): crash con codice di uscita, crash continui, stop, avvio, riavvio e unhealthy si comportano come nella tabella.
+✅ Stop e avvio provati su un DXP2800 con UGOS, notifiche arrivate su Android (ottobre 2026). Crash, crash continui, riavvio e unhealthy sono stati provati su Docker normale con un finto server ntfy e si comportano come nella tabella.
 
 ### Note
 

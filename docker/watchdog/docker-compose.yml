@@ -23,7 +23,8 @@ services:
     environment:
       TZ: Europe/Rome
       # ntfy on the NAS, by LAN address (the name "nas" only resolves on Tailscale devices).
-      NTFY_URL: http://192.168.1.65:8090/nas
+      # Replace <NAS LAN IP>, e.g. http://192.168.1.10:8090/nas.
+      NTFY_URL: http://<NAS LAN IP>:8090/nas
       # Token from "ntfy token add <user>" (docs/ntfy.md). Secret: never commit it.
       NTFY_TOKEN: tk_REPLACE_ME
       # Seconds a stopped container may stay down before you are told.
