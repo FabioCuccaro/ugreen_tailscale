@@ -99,6 +99,8 @@ Announce only the `/32` of the NAS, never your whole home network (`192.168.1.0/
 
 [`docker/ntfy/docker-compose.yml`](docker/ntfy/docker-compose.yml) runs a private [ntfy](https://ntfy.sh) server on the NAS, reachable only through Tailscale (`http://nas:8090`), with login required and no Firebase. Scripts and containers on the NAS can then send notifications to your phone. Guide: [`docs/ntfy.md`](docs/ntfy.md) (Italian: [`docs/it/ntfy.md`](docs/it/ntfy.md)). ✅ Tested on an Android phone over mobile data.
 
+The Project [`docker/watchdog`](docker/watchdog/docker-compose.yml) uses it to notify you when a container crashes, stays stopped or turns unhealthy ([guide](docs/ntfy.md#container-down-alerts)).
+
 ## Security notes
 
 - **Never commit secrets**: the filled-in compose (auth key), the `state/` folder (node keys), ntfy's `data/` folder. [`.gitignore`](.gitignore) excludes the usual paths.

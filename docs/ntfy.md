@@ -78,6 +78,46 @@ It returns a `tk_…` code. It is a secret like a password: put it only in the c
 curl -H "Authorization: Bearer tk_…" -H "Title: Backup" -d "Backup finished" http://<NAS LAN IP>:8090/nas
 ```
 
+## Container down alerts
+
+The Project `watchdog` ([`docker/watchdog/docker-compose.yml`](../docker/watchdog/docker-compose.yml)) watches Docker and posts to the `nas` topic when a container:
+
+| What happens | Notification | Priority |
+|---|---|---|
+| exits with an error and nobody stopped it (crash, out of memory) | `<name> crashed`, with the exit code, right away | high |
+| is stopped (by you, by UGOS, by an update) and is **still down after 60 s** | `<name> stopped` | default |
+| fails its healthcheck (for example Immich or ntfy) | `<name> unhealthy` | high |
+| runs again, or is healthy again, after one of the above | `<name> back up` | default |
+
+A restart or a *Redeploy* finishes within 60 s and stays silent. A container stuck in a crash loop sends at most one `crashed` every 10 minutes. When the watchdog itself starts (for example after the NAS reboots) it sends a low-priority `Watchdog started`.
+
+It is a short shell script inside the official `docker:27-cli` image: nothing to build, no extra files. It needs the ntfy token from [Sending from scripts and containers](#sending-from-scripts-and-containers).
+
+### Setup
+
+1. Docker → **Project** → *Create*. Name `watchdog`, folder `docker/watchdog`.
+2. Paste [`docker/watchdog/docker-compose.yml`](../docker/watchdog/docker-compose.yml) and change:
+   - `NTFY_TOKEN`: your `tk_…` token (only in UGOS, never in git);
+   - `NTFY_URL`, if the NAS LAN address or the port of ntfy is different;
+   - `IGNORE`, to add containers you don't want to hear about (names separated by spaces);
+   - `GRACE`, if 60 seconds is too short or too long.
+3. Start it. The phone receives **Watchdog started**, and the container Logs show `watchdog: ntfy http://…/nas, grace 60 s, ignoring: watchdog`. If the Logs say `ntfy send failed`, check the token and the address.
+
+### Test
+
+1. Docker → *Project* → `qbittorrent` → **Stop**.
+2. After about a minute the phone shows **qbittorrent stopped**.
+3. **Start** it again: **qbittorrent back up** arrives within seconds.
+4. **Restart** it: no notification.
+
+Tested on Docker with a fake ntfy server (October 2026): crash with exit code, crash loop, stop, start, restart and unhealthy all behave as in the table above.
+
+### Notes
+
+- The watchdog reads the Docker socket. `:ro` stops it from replacing the socket file, but the Docker API behind it still allows everything: treat the `watchdog` Project like the others that have the socket, and keep its image to the official one.
+- Containers created while the watchdog is running are watched too: it follows events, not a fixed list.
+- If the whole NAS goes down, nothing can send a notification. Use an outside check for that (for example Uptime Kuma on another machine in the tailnet).
+
 ## Security notes
 
 - Without login nothing can be read or written (`NTFY_AUTH_DEFAULT_ACCESS: deny-all`): an anonymous publish gets `403`.
