@@ -1,0 +1,88 @@
+# OPTIONAL: container watchdog. Sends an ntfy notification when a container on the NAS
+# crashes, stays stopped, or turns unhealthy, and another one when it is back.
+# Paste into UGOS → Docker → Project, name "watchdog", folder docker/watchdog
+# (guide: docs/ntfy.md#container-down-alerts, Italian: docs/it/ntfy.md).
+# Needs the ntfy Project (docker/ntfy) and an ntfy token.
+#
+# The only secret is NTFY_TOKEN: put the real token only in the copy pasted into UGOS,
+# never in git.
+#
+# How it decides:
+#   - a container exits with an error and nobody stopped it  → "crashed" right away (high priority)
+#   - a container is stopped (by you, UGOS, an update)       → "stopped" only if it is still
+#     down after GRACE seconds, so restarts and Redeploys stay silent
+#   - healthcheck goes unhealthy                             → "unhealthy"
+#   - the container starts again / turns healthy             → "back up"
+#   - at most one "crashed" every 10 minutes per container, so a crash loop doesn't flood you
+services:
+  watchdog:
+    # Official Docker CLI image (Alpine): docker + busybox sh/wget, nothing else to install.
+    image: docker:27-cli
+    container_name: watchdog
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Rome
+      # ntfy on the NAS, by LAN address (the name "nas" only resolves on Tailscale devices).
+      # Replace <NAS LAN IP>, e.g. http://192.168.1.10:8090/nas.
+      NTFY_URL: http://<NAS LAN IP>:8090/nas
+      # Token from "ntfy token add <user>" (docs/ntfy.md). Secret: never commit it.
+      NTFY_TOKEN: tk_REPLACE_ME
+      # Seconds a stopped container may stay down before you are told.
+      GRACE: "60"
+      # Container names to ignore, separated by spaces.
+      IGNORE: "watchdog"
+    volumes:
+      # Read events and container state from Docker.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    entrypoint: ["/bin/sh", "-c"]
+    # $$ is a literal $ for the shell (a single $ would be read by compose).
+    command:
+      - |
+        S=/tmp/watchdog; mkdir -p $$S
+        now() { date +%s; }
+        recent() { [ -f "$$1" ] && [ $$(( $$(now) - $$(cat "$$1") )) -lt "$$2" ]; }
+        send() {
+          wget -q -O /dev/null -T 15 \
+            --header "Authorization: Bearer $$NTFY_TOKEN" \
+            --header "Priority: $$1" --header "Tags: $$2" --header "Title: $$3" \
+            --post-data "$$4" "$$NTFY_URL" || echo "ntfy send failed: $$3"
+        }
+        running() { [ "$$(docker inspect -f '{{.State.Running}}' "$$1" 2>/dev/null)" = true ]; }
+        check_later() {
+          sleep "$$GRACE"
+          running "$$1" && return
+          [ -f "$$S/down.$$1" ] && return
+          now > "$$S/down.$$1"
+          send default warning "$$1 stopped" "$$1 has been down for more than $$GRACE s."
+        }
+        echo "watchdog: ntfy $$NTFY_URL, grace $$GRACE s, ignoring: $$IGNORE"
+        send low eyes "Watchdog started" "Watching containers on $$(hostname)."
+        while true; do
+          docker events --filter type=container \
+            --filter event=kill --filter event=die --filter event=start --filter event=health_status \
+            --format '{{.Action}}|{{.Actor.Attributes.name}}|{{.Actor.Attributes.exitCode}}' |
+          while IFS='|' read -r action name code; do
+            case " $$IGNORE " in *" $$name "*) continue ;; esac
+            echo "$$action $$name $$code"
+            case "$$action" in
+              kill) now > "$$S/kill.$$name" ;;
+              die)
+                if [ "$${code:-0}" != 0 ] && ! recent "$$S/kill.$$name" 30 && ! recent "$$S/crash.$$name" 600; then
+                  now > "$$S/crash.$$name"; now > "$$S/down.$$name"
+                  send high rotating_light "$$name crashed" "$$name exited on its own with exit code $$code."
+                fi
+                check_later "$$name" & ;;
+              start|"health_status: healthy")
+                if [ -f "$$S/down.$$name" ]; then
+                  rm -f "$$S/down.$$name"
+                  send default white_check_mark "$$name back up" "$$name is running again."
+                fi ;;
+              "health_status: unhealthy")
+                if [ ! -f "$$S/down.$$name" ]; then
+                  now > "$$S/down.$$name"
+                  send high warning "$$name unhealthy" "The healthcheck of $$name is failing."
+                fi ;;
+            esac
+          done
+          echo "docker events stopped, retrying in 10 s"; sleep 10
+        done
